@@ -45,7 +45,7 @@ exports.init = (baseUrl) ->
 		, defaultHandler callback)
 	createApiKey: (email, ownerCode, callback) ->
 		if not ownerCode
-			ownerCode = $.random.string(16)
+			ownerCode = $.random.string(12)
 		request(
 			method: "PUT"
 			url: [baseUrl,ownerCode,"create-key",email].join "/"
