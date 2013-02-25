@@ -3,7 +3,6 @@ request = require "request"
 
 defaultHandler = (callback) ->
 	(err, resp, body) ->
-		$.log "mpath-client response: #{err} #{body}"
 		return callback(err, null) if err
 		try
 			obj = JSON.parse(body)
@@ -13,6 +12,47 @@ defaultHandler = (callback) ->
 		catch err
 			return callback err, null
 
+exports.baseUrl = "http://api.conductrics.com"
+exports.apiKey = "..."
+exports.ownerCode = "..."
+
+class Promise
+	constructor: (f) ->
+		@q = []
+		f (a...) =>
+			@result = a
+			g(a...) for g in @q
+	then: (cb) ->
+		if 'result' of @ then cb(@result...)
+		else @q.push cb
+
+class exports.Agent
+	constructor: (@name) ->
+	decide: (sessionId, choices...) ->
+		return new Promise (cb) ->
+			request(
+				method: "GET"
+				url: [baseUrl, ownerCode, agentCode, "decision"].join "/"
+				qs:
+					point: pointCode
+				headers:
+					"x-mpath-apikey": apikey
+					"x-mpath-session": sessionCode
+			, defaultHandler cb)
+
+	reward: (sessionId, value = 1.0, goalCode = "goal-1") ->
+		return new Promise (cb) -> cb()
+
+if require.main is module
+	p = new Promise (cb) ->
+		$.delay 300, cb
+	
+	p.then(-> $.log "done!")
+	
+	exports.apiKey = "api-DfEfOmMFMXJCVAJFwRwXvgLk"
+	exports.ownerCode = "
+
+"""
 exports.init = (baseUrl) ->
 	getDecisions: (apikey, sessionCode, ownerCode, agentCode, pointCode, callback) ->
 		request(
@@ -66,3 +106,4 @@ exports.init = (baseUrl) ->
 				"x-mpath-email": email
 				"x-mpath-password": password
 		, defaultHandler callback)
+"""
