@@ -2,7 +2,7 @@
   "author": "Jesse Dailey <jesse@conductrics.com>",
   "name": "mpath-client",
   "description": "Client for mPath Learning API",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "main": "index.js",
   "dependencies": {
 		"bling": "latest",
