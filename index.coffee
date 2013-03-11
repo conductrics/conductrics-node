@@ -6,6 +6,15 @@ Conductrics.baseUrl = "http://api.conductrics.com"
 Conductrics.apiKey = "..."
 Conductrics.ownerCode = "..."
 
+property = (field) -> (val) ->
+	if arguments.length is 0
+		return switch true
+			when field of @properties then @properties[field]
+			when field of Conductrics then Conductrics[field]
+	else if val is null
+		delete @properties[field]
+	else @properties[field] = val
+	return @
 
 class Conductrics.Agent
 	@jsonHandler = jsonHandler = (callback) ->
@@ -18,63 +27,96 @@ class Conductrics.Agent
 				return callback null, obj
 			catch err
 				return callback err, null
-	newRequest = (sessionId, opts, url) ->
-		req =
-			method: "GET"
-			url: url
-			headers:
-				"x-mpath-apikey": Conductrics.apiKey
-				"x-mpath-session": sessionId
-		if 'ip' of opts
-			req.headers['x-mpath-ip'] = opts.ip
-		if 'ua' of opts
-			req.headers['x-mpath-ua'] = opts.ua
-		if opts.segment?
-			req.headers['x-mpath-segment'] = opts.segment
-		if opts.features?
-			req.headers['x-mpath-features'] = switch $.type opts.features
-				when 'object' then ("#{k}:#{parseFloat(v).toFixed 2}" for k,v of opts.features).join ","
-				when 'array','bling' then opts.features.join ","
-		return req
+	_request = (args...) ->
+		""" _request(sessionId, [opts], url, cb) -> """
+		try
+			cb = args.pop()
+			url = args.pop()
+			if args.length > 1
+				opts = args.pop()
+			unless opts?
+				opts = {}
+			sessionId = args.pop()
+			req =
+				method: "GET"
+				url: url
+				headers:
+					"x-mpath-apikey": Conductrics.apiKey
+					"x-mpath-session": sessionId
+			if 'ip' of opts
+				req.headers['x-mpath-ip'] = opts.ip
+			if 'ua' of opts
+				req.headers['x-mpath-ua'] = opts.ua
+			if opts.segment?
+				req.headers['x-mpath-segment'] = opts.segment
+			if opts.features?
+				req.headers['x-mpath-features'] = switch $.type opts.features
+					when 'object' then ("#{k}:#{parseFloat(v).toFixed 2}" for k,v of opts.features).join ","
+					when 'array','bling' then opts.features.join ","
+			request req, jsonHandler cb
+		catch err
+			cb err, null
 
 	constructor: (@name) ->
+		""" new Conductrics.Agent("agent-name") """
+		@properties = {
+			requestLimit: 10 # max. concurrent requests
+			requestCount: 0  # current concurrent requests
+		}
+
+	apiKey: property('apiKey')
+	baseUrl: property('baseUrl')
+	ownerCode: property('ownerCode')
+	requestLimit: property('requestLimit')
+	requestCount: property('requestCount')
+
+	agentUrl: (parts...) ->
+		[@baseUrl(), @ownerCode(), @name].concat(parts).join "/"
 
 	decide: (a...) ->
-		""" agent.decide(sessionId, [opts], choices, cb) """
+		"""
+		agent.decide(sessionId, [opts], choices, cb)
+
+		opts:
+		 - ip: (optional, string) the remote IP address associated with the session, "123.45.67.8"
+		 - ua: (optional, string) the remote User Agent
+		 - segment: (optional, string) like, 'aerospace' or 'goverment', any label you determine.
+		 - features: (optional, array or object) either a list of tags like, ['male','young']
+		   - or, an object with numeric values: { age: 0.33, income: 0.93 }
+		"""
 		cb = a.pop()
 		choices = a.pop()
-		if a.length > 1
-			opts = a.pop()
-		else
-			opts = Object.create null
+		opts = if a.length > 1 then a.pop() else {}
 		sessionId = a.pop()
 
-		request newRequest(sessionId, opts,
-			[Conductrics.baseUrl, Conductrics.ownerCode, @name, "decision", choices.length].join "/"
-		), jsonHandler (err, obj) ->
-			return cb(err, null) if err
+		_request sessionId, opts, @agentUrl("decision", choices.length), (err, obj) ->
+			return cb(err, choices[0]) if err
 			return cb(null, choices[parseInt obj.decision])
 
 	reward: (a...) ->
-		""" agent.reward(sessionId, [opts], cb) """
+		"""
+		agent.reward(sessionId, [opts], cb)
+
+		opts:
+		 - goalCode: (optional, string) which 
+		 - value: (number) how much
+		"""
 		cb = a.pop()
-		if a.length > 1
-			opts = a.pop()
-		sessionId = a.pop()
 		opts = $.extend {
 			goalCode: "goal-1"
 			value: 1.0
-		}, opts
-		url = [Conductrics.baseUrl, Conductrics.ownerCode, @name, "goal", opts.goalCode].join "/"
+		}, if a.length > 1 then a.pop() else null
+		sessionId = a.pop()
+		url = @agentUrl "goal", opts.goalCode
 		if opts.value != 1
 			url += "?reward=#{opts.value}"
-		request newRequest(sessionId, opts, url), jsonHandler (err, obj) ->
-			return cb(err, null) if err
+		_request sessionId, opts, url, (err, obj) ->
+			return cb(err, 0) if err
 			return cb(null, obj.reward)
 
 	expire: (sessionId, cb) ->
-		url = [Conductrics.baseUrl, Conductrics.ownerCode, @name, "expire"].join "/"
-		request newRequest(sessionId, {}, url), jsonHandler (err, obj) ->
+		""" agent.expire(sessionId, cb) """
+		_request sessionId, @agentUrl("expire"), (err, obj) ->
 			return cb(err, null) if err
 			return cb(null, obj)
 
