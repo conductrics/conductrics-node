@@ -1,10 +1,10 @@
 {
-  "author": "Jesse Dailey <jesse@conductrics.com>",
-  "name": "conductrics-api",
-  "description": "Client for the Conductrics API (www.conductrics.com)",
-  "version": "0.1.0",
-  "main": "index.js",
-  "dependencies": {
+	"author": "Jesse Dailey <jesse@conductrics.com>",
+	"name": "conductrics-api",
+	"description": "Client for the Conductrics API (www.conductrics.com)",
+	"version": "0.1.0",
+	"main": "index.js",
+	"dependencies": {
 		"coffee-script": "latest",
 		"bling": "latest",
 		"request": "latest"
