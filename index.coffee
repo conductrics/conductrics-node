@@ -2,11 +2,11 @@ require 'bling'
 request = require "request"
 Conductrics = exports
 
-Conductrics.baseUrl = "http://api.conductrics.com"
+Conductrics.baseUrl = "https://api.conductrics.com"
 Conductrics.apiKey = "..."
 Conductrics.ownerCode = "..."
 
-property = (field) -> (val) ->
+_property = (field) -> (val) ->
 	if arguments.length is 0
 		return switch true
 			when field of @properties then @properties[field]
@@ -16,59 +16,59 @@ property = (field) -> (val) ->
 	else @properties[field] = val
 	return @
 
-class Conductrics.Agent
-	@jsonHandler = jsonHandler = (callback) ->
-		(err, resp, body) ->
-			return callback(err, null) if err
-			try
-				obj = JSON.parse(body)
-				return callback obj.err, null if "err" of obj
-				return callback obj.error, null if "error" of obj
-				return callback null, obj
-			catch err
-				return callback err, null
-	_request = (args...) ->
-		""" _request(sessionId, [opts], url, cb) -> """
+_jsonHandler = (callback) ->
+	(err, resp, body) ->
+		return callback(err, null) if err
 		try
-			cb = args.pop()
-			url = args.pop()
-			if args.length > 1
-				opts = args.pop()
-			unless opts?
-				opts = {}
-			sessionId = args.pop()
-			req =
-				method: "GET"
-				url: url
-				headers:
-					"x-mpath-apikey": Conductrics.apiKey
-					"x-mpath-session": sessionId
-			if 'ip' of opts
-				req.headers['x-mpath-ip'] = opts.ip
-			if 'ua' of opts
-				req.headers['x-mpath-ua'] = opts.ua
-			if opts.segment?
-				req.headers['x-mpath-segment'] = opts.segment
-			if opts.features?
-				req.headers['x-mpath-features'] = switch $.type opts.features
-					when 'object' then ("#{k}:#{parseFloat(v).toFixed 2}" for k,v of opts.features).join ","
-					when 'array','bling' then opts.features.join ","
-			request req, jsonHandler cb
+			obj = JSON.parse(body)
+			return callback obj.err, null if "err" of obj
+			return callback obj.error, null if "error" of obj
+			return callback null, obj
 		catch err
-			cb err, null
+			return callback err, null
+
+_request = (args...) ->
+	""" .request(sessionId, [opts], url, cb) -> """
+	try
+		cb = args.pop()
+		url = args.pop()
+		if args.length > 1
+			opts = args.pop()
+		unless opts?
+			opts = {}
+		sessionId = args.pop()
+		req =
+			method: opts.method ? "GET"
+			url: url
+			headers: $.extend {
+				"x-mpath-apikey": Conductrics.apiKey
+				"x-mpath-session": sessionId
+			}, opts.headers
+		if 'ip' of opts
+			req.headers['x-mpath-ip'] = opts.ip
+		if 'ua' of opts
+			req.headers['x-mpath-ua'] = opts.ua
+		if opts.segment?
+			req.headers['x-mpath-segment'] = opts.segment
+		if opts.features?
+			req.headers['x-mpath-features'] = switch $.type opts.features
+				when 'object' then ("#{k}:#{parseFloat(v).toFixed 2}" for k,v of opts.features).join ","
+				when 'array','bling' then opts.features.join ","
+		request req, _jsonHandler cb
+	catch err
+		cb err, null
+
+class Conductrics.Agent
 
 	constructor: (@name) ->
 		""" new Conductrics.Agent("agent-name") """
-		@properties = {
-			requestLimit: 10 # max. concurrent requests
-			requestCount: 0  # current concurrent requests
-		}
+		@properties = {}
 
-	apiKey: property('apiKey')
-	baseUrl: property('baseUrl')
-	ownerCode: property('ownerCode')
-	requestLimit: property('requestLimit')
-	requestCount: property('requestCount')
+	apiKey: _property('apiKey')
+	baseUrl: _property('baseUrl')
+	ownerCode: _property('ownerCode')
+	requestLimit: _property('requestLimit')
+	requestCount: _property('requestCount')
 
 	agentUrl: (parts...) ->
 		[@baseUrl(), @ownerCode(), @name].concat(parts).join "/"
@@ -120,14 +120,40 @@ class Conductrics.Agent
 			return cb(err, null) if err
 			return cb(null, obj)
 
+class Conductrics.Administrator
+	adminKey: _property 'adminKey'
+	ownerCode: _property 'ownerCode'
+	baseUrl: _property 'baseUrl'
+
+	constructor: -> @properties = {}
+
+	createApiKey: (args...) ->
+		""" .createApiKey(rootKey, rootOwner, email, [ownerCode], callback) """
+		callback = args.pop()
+		if args.length > 3
+			ownerCode = args.pop()
+		else
+			ownerCode = "owner_" + $.random.string 9
+		email = args.pop()
+		rootOwner = args.pop()
+		rootKey = args.pop()
+		_request null, {method: "PUT"}, @agentUrl("create-key", email), callback
+	checkLogin: (email, password, callback) ->
+		_request null, {
+			headers: {
+				"x-mpath-email": email
+				"x-mpath-password": password
+			}
+		}, [@baseUrl(), "login"].join("/"), callback
+
+
 if require.main is module
 
 	assert = require 'assert'
 
-	Conductrics.apiKey = "api-HFrPvhjnhVufRXtCGOIzejSW"
-	Conductrics.ownerCode = "owner_HJJnKxAdm"
-
 	agent = new Conductrics.Agent("node-agent")
+		.apiKey("api-qJJuXpmAuJqYuKzMeXtjUVUt")
+		.ownerCode("owner_yuXqselMg")
 
 	do (sessionId = $.random.string 16) ->
 		agent.decide sessionId, ["a", "b"], (err, decision) ->
@@ -173,3 +199,9 @@ if require.main is module
 					assert.equal result, 2.1
 					unless err
 						agent.expire sessionId, (err, result) ->
+
+	new Conductrics.Administrator()
+		.adminKey("admin_EOJyrYQRCquXJkfwlhoOCiNaQx")
+		.ownerCode("owner_yuXqselMg")
+		.checkLogin "jesse.dailey+7@gmail.com", "yCXpDqlG", (args...) ->
+			console.log "checkLogin response:", args
