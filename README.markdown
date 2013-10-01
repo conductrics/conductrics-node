@@ -1,26 +1,37 @@
-MPath API - The Node.JS Client
---------------------------
+Conductrics API
+---------------
 
 # Installation
 
-    npm install mpath-client
+    npm install conductrics-api
 
 # Usage
 
-    mpath = require("mpath-client").init("http://api.conductrics.net/")
+    Conductrics = require("conductrics-api")
+    agent = new Conductrics.Agent("my-agent-name")
+      .apiKey("my-api-key")
+      .ownerCode("my-owner-code")
 
-# Quick Start
-  
-  To understand what all the options are, please see the [Quick Start Guide][quick-start].
+    # 1. Make decisions.
+    agent.decide sessionId, [ 'a', 'b', 'c'] , (err, decision) ->
+      assert decision in [ 'a', 'b', 'c' ]
 
-  The driver is a simple REST client.
-  
-  [quick-start]: http://developers.conductrics.net/quick-start
+    # 2. Send rewards.
+    agent.reward sessionId, 1.2, (err, result) ->
+      assert result is 1.2
 
-# Client Methods
+    # 3. Profit (literally)
 
-  1. __getDecisions(apikey, sessionCode, ownerCode, agentCode, pointCode, callback)__
-  2. __sendReward(apikey, sessionCode, ownerCode, agentCode, goalCode, callback)__
-  3. __expireSession(apikey, sessionCode, ownerCode, callback)__
-  4. __createAgent(apikey, ownerCode, agentCode, agentJson, callback)__
-  5. __createApiKey(email, ownerCode, callback)__
+	Agents are created on the server automatically when they are used
+	by code, and they attempt to mutate themselves in order to answer
+	queries that change over time.
+
+	For instance, if you were calling `agent.decide ['a','b']` for a
+	while, but added a third option: 'c', the agent would mutate itself in
+	order to learn about 'c', without losing what it has learned about
+	'a' and 'b'.
+
+	Similarly, if option 'c' expired for some reason and you stopped
+	passing it to the API, it would not be considered eligible for selection,
+	but the agent will not forget any of c's past.
+
