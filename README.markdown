@@ -22,16 +22,5 @@ Conductrics API
 
     # 3. Profit (literally)
 
-	Agents are created on the server automatically when they are used
-	by code, and they attempt to mutate themselves in order to answer
-	queries that change over time.
 
-	For instance, if you were calling `agent.decide ['a','b']` for a
-	while, but added a third option: 'c', the agent would mutate itself in
-	order to learn about 'c', without losing what it has learned about
-	'a' and 'b'.
-
-	Similarly, if option 'c' expired for some reason and you stopped
-	passing it to the API, it would not be considered eligible for selection,
-	but the agent will not forget any of c's past.
-
+Please see the [full documentation](https://console.conductrics.com/docs/owner_code/api-reference), for more information on everything you can do with the Conductrics API.
