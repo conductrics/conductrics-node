@@ -9,7 +9,7 @@ all: test
 test: tests/pass
 	@echo "All tests are passing."
 
-tests/pass: $(MOCHA) $(TEST_FILES)
+tests/pass: $(MOCHA) $(TEST_FILES) index.coffee admin.coffee Makefile
 	$(MOCHA) $(MOCHA_OPTS) $(TEST_FILES) && touch tests/pass
 
 $(MOCHA):
