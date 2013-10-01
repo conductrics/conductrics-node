@@ -1,12 +1,12 @@
-{ class_property, request } = require "./index"
+{ classy_property, request } = require "./index"
 
 class exports.Administrator
 	constructor: ->
 		@properties = {}
 
-	apiKey: class_property 'apiKey'
-	ownerCode: class_property 'ownerCode'
-	baseUrl: class_property 'baseUrl'
+	apiKey: classy_property 'apiKey'
+	ownerCode: classy_property 'ownerCode'
+	baseUrl: classy_property 'baseUrl'
 
 	createApiKey: (args...) ->
 		"""
