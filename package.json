@@ -2,7 +2,7 @@
 	"author": "Jesse Dailey <jesse@conductrics.com>",
 	"name": "conductrics-api",
 	"description": "Client for the Conductrics API (www.conductrics.com)",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"main": "index.js",
 	"dependencies": {
 		"coffee-script": "latest",
