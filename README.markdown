@@ -8,6 +8,10 @@ Conductrics API
 # Usage
 
     Conductrics = require("conductrics-api")
+
+    # Set an optional global API url
+    Conductrics.baseUrl = "https://api.conductrics.com"
+
     agent = new Conductrics.Agent("my-agent-name")
       .apiKey("my-api-key")
       .ownerCode("my-owner-code")
