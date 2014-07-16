@@ -4,6 +4,10 @@
 	"description": "Client for the Conductrics API (www.conductrics.com)",
 	"version": "0.1.1",
 	"main": "index.js",
+	"repository": {
+		"type": "git",
+		"url": "http://github.com/conductrics/conductrics-api.git"
+	},
 	"dependencies": {
 		"coffee-script": "latest",
 		"bling": "latest",
