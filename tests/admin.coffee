@@ -1,5 +1,5 @@
 assert = require 'assert'
-Conductrics = require('../admin.coffee')
+Conductrics = require('../src/admin.coffee')
 
 describe "Administrator", ->
 	describe "has property", ->
