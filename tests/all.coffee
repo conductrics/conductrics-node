@@ -1,6 +1,6 @@
 assert = require 'assert'
-Conductrics = require('../index.coffee')
-$.extend Conductrics, require('../admin.coffee')
+Conductrics = require('../src/index.coffee')
+$.extend Conductrics, require('../src/admin.coffee')
 
 test_agent = -> new Conductrics.Agent("test-agent")
 	.apiKey("api-tpxxhxZkzjIoAtDTGgajpHtJ")

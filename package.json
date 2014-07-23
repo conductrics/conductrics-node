@@ -2,18 +2,23 @@
 	"author": "Jesse Dailey <jesse@conductrics.com>",
 	"name": "conductrics-api",
 	"description": "Client for the Conductrics API (www.conductrics.com)",
-	"version": "0.1.1",
-	"main": "index.js",
+	"version": "0.1.2",
+	"main": "lib/index.js",
+	"scripts": {
+		"clean": "make clean",
+		"test": "make test",
+		"build": "make build",
+		"prepublish": "make clean all"
+	},
 	"repository": {
 		"type": "git",
 		"url": "http://github.com/conductrics/conductrics-api.git"
 	},
 	"dependencies": {
-		"coffee-script": "latest",
 		"bling": "latest",
 		"request": "latest"
 	},
 	"devDependencies": {
-		"coffee-script": "latest"
+		"coffee-script": "~1.6.3"
 	}
 }
