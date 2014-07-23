@@ -9,11 +9,11 @@
 		"url": "http://github.com/conductrics/conductrics-api.git"
 	},
 	"dependencies": {
-		"coffee-script": "latest",
+		"coffee-script": "~1.6.3",
 		"bling": "latest",
 		"request": "latest"
 	},
 	"devDependencies": {
-		"coffee-script": "latest"
+		"coffee-script": "~1.6.3"
 	}
 }
